@@ -1,0 +1,77 @@
+const createNextIntlPlugin = require("next-intl/plugin")
+const checkEnvVariables = require("./check-env-variables")
+
+const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts")
+
+checkEnvVariables()
+
+/**
+ * Medusa Cloud-related environment variables
+ */
+const S3_HOSTNAME = process.env.MEDUSA_CLOUD_S3_HOSTNAME
+const S3_PATHNAME = process.env.MEDUSA_CLOUD_S3_PATHNAME
+
+/**
+ * @type {import('next').NextConfig}
+ */
+const nextConfig = {
+  reactStrictMode: true,
+  logging: {
+    fetches: {
+      fullUrl: true,
+    },
+  },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+  images: {
+    remotePatterns: [
+      {
+        protocol: "http",
+        hostname: "localhost",
+      },
+      {
+        protocol: "http",
+        hostname: "127.0.0.1",
+      },
+      {
+        protocol: "https",
+        hostname: "medusa-public-images.s3.eu-west-1.amazonaws.com",
+      },
+      {
+        protocol: "https",
+        hostname: "medusa-server-testing.s3.amazonaws.com",
+      },
+      {
+        protocol: "https",
+        hostname: "medusa-server-testing.s3.us-east-1.amazonaws.com",
+      },
+      {
+        protocol: "https",
+        hostname: "bs.plantnet.org",
+      },
+      {
+        protocol: "https",
+        hostname: "res.cloudinary.com",
+      },
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com",
+      },
+      ...(S3_HOSTNAME && S3_PATHNAME
+        ? [
+            {
+              protocol: "https",
+              hostname: S3_HOSTNAME,
+              pathname: S3_PATHNAME,
+            },
+          ]
+        : []),
+    ],
+  },
+}
+
+module.exports = withNextIntl(nextConfig)
