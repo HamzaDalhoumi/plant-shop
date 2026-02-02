@@ -4,6 +4,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { useCallback, useMemo, useState, useEffect, useRef } from "react"
 import { HttpTypes } from "@medusajs/types"
 import { FilterGroup, SelectedFilters, getColorHex, QUICK_FILTERS } from "@lib/util/metadata-filters"
+import { useTranslations } from "next-intl"
 
 import SortProducts, { SortOptions } from "./sort-products"
 
@@ -147,12 +148,12 @@ const getFilterIcon = (key: string) => {
   )
 }
 
-// Category title mapping
-const CATEGORY_TITLES: Record<string, string> = {
-  indoor: "🌿 Plantes d'intérieur",
-  outdoor: "🌳 Plantes d'extérieur", 
-  pots: "🪴 Pots & Jardinières",
-  all: "🌱 Toutes les plantes",
+// Category title keys for translation
+const CATEGORY_TITLE_KEYS: Record<string, string> = {
+  indoor: "indoor",
+  outdoor: "outdoor", 
+  pots: "pots",
+  all: "all",
 }
 
 const RefinementList = ({
@@ -169,6 +170,11 @@ const RefinementList = ({
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const filterContentRef = useRef<HTMLDivElement>(null)
+  
+  // Translations
+  const t = useTranslations("filters")
+  const tCategories = useTranslations("categories")
+  const tCommon = useTranslations("common")
 
   // Determine default expanded groups based on category
   const getDefaultExpanded = useCallback(() => {
@@ -347,7 +353,7 @@ const RefinementList = ({
           <svg className="w-4 h-4 text-brand-olive" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
           </svg>
-          Filtres rapides
+          {t("filterTitle")}
         </p>
         <div className="flex flex-wrap gap-2">
           {quickFilters.map((filter) => {
@@ -382,7 +388,7 @@ const RefinementList = ({
             <span className="flex items-center justify-center w-6 h-6 bg-brand-olive text-white text-xs font-bold rounded-full">
               {totalSelected}
             </span>
-            filtre{totalSelected > 1 ? "s" : ""} actif{totalSelected > 1 ? "s" : ""}
+            {totalSelected} {totalSelected > 1 ? t("values.size.M") : t("values.size.S")}
           </span>
           <button
             onClick={clearAllFilters}
@@ -391,7 +397,7 @@ const RefinementList = ({
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
             </svg>
-            Effacer tout
+            {t("clearAll")}
           </button>
         </div>
 
@@ -539,14 +545,14 @@ const RefinementList = ({
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
                 </svg>
-                Afficher moins
+                {t("showLess")}
               </>
             ) : (
               <>
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
-                Afficher tout ({group.options.length})
+                {t("showAll", { count: group.options.length })}
               </>
             )}
           </button>
@@ -623,14 +629,14 @@ const RefinementList = ({
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
                 </svg>
-                Afficher moins
+                {t("showLess")}
               </>
             ) : (
               <>
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
-                Afficher tout ({group.options.length})
+                {t("showAll", { count: group.options.length })}
               </>
             )}
           </button>
@@ -639,65 +645,115 @@ const RefinementList = ({
     )
   }
 
-  // Filter Group Header Component
+  // Filter Group Header Component - Fixed to avoid nested buttons
   const FilterGroupHeader = ({ group, selectedCount }: { group: FilterGroup; selectedCount: number }) => {
     const isExpanded = expandedGroups.has(group.key)
     
+    // Get translated label for the filter group
+    const getFilterLabel = (key: string, fallback: string) => {
+      const translationMap: Record<string, string> = {
+        size: t("size"),
+        water_needs: t("water"),
+        light: t("light"),
+        sun_exposure: t("light"),
+        color: t("color"),
+        family: t("family"),
+        placement: t("standingOrHanging"),
+        climate: t("characteristics"),
+        season: t("characteristics"),
+        frost_resistant: t("characteristics"),
+        difficulty: t("careLevel"),
+        features: t("characteristics"),
+        height_cm: t("height"),
+        diameter_cm: t("diameter"),
+        price: t("price"),
+        material: t("material"),
+        drainage: t("characteristics"),
+        style: t("style"),
+        shape: t("shape"),
+        rarity: t("characteristics"),
+        hanging: t("standingOrHanging"),
+        collection: "Collections",
+        tag: t("characteristics"),
+        room: t("room"),
+      }
+      return translationMap[key] || fallback
+    }
+    
     return (
-      <button
-        type="button"
-        onClick={() => toggleGroup(group.key)}
-        className="w-full flex items-center justify-between py-3.5 text-sm font-semibold text-brand-oliveDark hover:text-brand-olive transition-colors group"
-      >
-        <span className="flex items-center gap-2.5">
+      <div className="w-full flex items-center justify-between py-3.5 text-sm font-semibold text-brand-oliveDark hover:text-brand-olive transition-colors group">
+        <button
+          type="button"
+          onClick={() => toggleGroup(group.key)}
+          className="flex-1 flex items-center gap-2.5 text-left"
+        >
           <span className={`p-1.5 rounded-lg transition-colors ${
             selectedCount > 0 ? "bg-brand-olive/10 text-brand-olive" : "bg-brand-beige text-brand-olive/70 group-hover:text-brand-olive"
           }`}>
             {getFilterIcon(group.key)}
           </span>
-          <span>{group.labelFr}</span>
+          <span>{getFilterLabel(group.key, group.labelFr)}</span>
           {selectedCount > 0 && (
             <span className="bg-brand-olive text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center animate-pulse">
               {selectedCount}
             </span>
           )}
-        </span>
+        </button>
         <div className="flex items-center gap-2">
           {selectedCount > 0 && (
             <button
+              type="button"
               onClick={(e) => {
                 e.stopPropagation()
                 clearFilterGroup(group.key)
               }}
               className="text-[10px] text-brand-oliveDark/50 hover:text-brand-coral transition-colors px-2 py-1 rounded hover:bg-brand-coral/10"
             >
-              Effacer
+              {t("clearAll")}
             </button>
           )}
-          <svg
-            className={`w-4 h-4 transition-transform duration-300 ${isExpanded ? "rotate-180" : ""}`}
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
+          <button
+            type="button"
+            onClick={() => toggleGroup(group.key)}
+            className="p-1"
           >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-          </svg>
+            <svg
+              className={`w-4 h-4 transition-transform duration-300 ${isExpanded ? "rotate-180" : ""}`}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
         </div>
-      </button>
+      </div>
     )
   }
 
   // Main Filter Content Component
-  const FilterContent = () => (
+  const FilterContent = () => {
+    // Get translated category title
+    const getCategoryTitle = (type: string) => {
+      const titles: Record<string, string> = {
+        indoor: `🌿 ${tCategories("indoor.title")}`,
+        outdoor: `🌳 ${tCategories("outdoor.title")}`,
+        pots: `🪴 ${tCategories("pots.title")}`,
+        all: `🌱 ${tCategories("all.title")}`,
+      }
+      return titles[type] || titles.all
+    }
+    
+    return (
     <div ref={filterContentRef} className="flex flex-col gap-2">
       {/* Category Header */}
       <div className="pb-3 mb-2 border-b border-brand-beigeDark">
         <h2 className="text-lg font-bold text-brand-oliveDark">
-          {CATEGORY_TITLES[categoryType] || CATEGORY_TITLES.all}
+          {getCategoryTitle(categoryType)}
         </h2>
         {productCount > 0 && (
           <p className="text-xs text-brand-oliveDark/60 mt-1">
-            {productCount} produit{productCount > 1 ? "s" : ""} trouvé{productCount > 1 ? "s" : ""}
+            {t("showResults", { count: productCount })}
           </p>
         )}
       </div>
@@ -745,13 +801,13 @@ const RefinementList = ({
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
           <span>
-            Utilisez les filtres ci-dessus pour trouver la plante parfaite pour votre espace. 
-            Combinez plusieurs filtres pour affiner votre recherche.
+            {t("helpText")}
           </span>
         </p>
       </div>
     </div>
   )
+  }
 
   return (
     <>
@@ -767,7 +823,7 @@ const RefinementList = ({
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
           </svg>
-          <span className="font-semibold">Filtres</span>
+          <span className="font-semibold">{t("filterTitle")}</span>
           {totalSelected > 0 && (
             <span className="bg-white text-brand-olive text-xs font-bold px-2 py-0.5 rounded-full animate-pulse">
               {totalSelected}
@@ -816,7 +872,7 @@ const RefinementList = ({
                         : "text-brand-oliveDark"
                     }`}
                   >
-                    Filtres
+                    {t("filterTitle")}
                   </button>
                   <button
                     onClick={() => setActiveTab("sort")}
@@ -826,7 +882,7 @@ const RefinementList = ({
                         : "text-brand-oliveDark"
                     }`}
                   >
-                    Trier
+                    {tCommon("sortBy") || "Sort"}
                   </button>
                 </div>
               </div>
@@ -846,7 +902,7 @@ const RefinementList = ({
                 <FilterContent />
               ) : (
                 <div className="py-4">
-                  <h3 className="text-lg font-bold text-brand-oliveDark mb-4">Trier par</h3>
+                  <h3 className="text-lg font-bold text-brand-oliveDark mb-4">{tCommon("sortBy") || "Sort by"}</h3>
                   <SortProducts sortBy={sortBy} setQueryParams={setQueryParams} data-testid={dataTestId} />
                 </div>
               )}
@@ -859,14 +915,14 @@ const RefinementList = ({
                   onClick={clearAllFilters}
                   className="flex-shrink-0 px-4 py-3 border-2 border-brand-coral text-brand-coral rounded-full font-medium hover:bg-brand-coral/10 transition-colors"
                 >
-                  Effacer ({totalSelected})
+                  {t("clearAll")} ({totalSelected})
                 </button>
               )}
               <button
                 onClick={() => setIsMobileOpen(false)}
                 className="flex-1 bg-brand-olive text-white py-3 rounded-full font-semibold hover:bg-brand-oliveDark transition-colors shadow-lg"
               >
-                Voir {productCount} résultat{productCount > 1 ? "s" : ""}
+                {t("showResults", { count: productCount })}
               </button>
             </div>
           </div>

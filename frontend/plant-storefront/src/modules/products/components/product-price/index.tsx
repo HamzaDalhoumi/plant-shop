@@ -9,9 +9,11 @@ import { HttpTypes } from "@medusajs/types"
 export default function ProductPrice({
   product,
   variant,
+  quantity = 1,
 }: {
   product: HttpTypes.StoreProduct
   variant?: HttpTypes.StoreProductVariant
+  quantity?: number
 }) {
   const t = useTranslations("products")
   const { cheapestPrice, variantPrice } = getProductPrice({
@@ -25,6 +27,14 @@ export default function ProductPrice({
     return <div className="block w-32 h-9 bg-gray-100 animate-pulse" />
   }
 
+  // Calculate total price based on quantity
+  const unitPrice = selectedPrice.calculated_price_number || 0
+  const totalPrice = unitPrice * quantity
+  const formattedTotal = new Intl.NumberFormat(undefined, {
+    style: 'currency',
+    currency: selectedPrice.currency_code || 'TND',
+  }).format(totalPrice / 100) // Medusa stores prices in cents
+
   return (
     <div className="flex flex-col text-ui-fg-base">
       <span
@@ -35,11 +45,16 @@ export default function ProductPrice({
         {!variant && t("fromPrice")}
         <span
           data-testid="product-price"
-          data-value={selectedPrice.calculated_price_number}
+          data-value={totalPrice}
         >
-          {selectedPrice.calculated_price}
+          {quantity > 1 ? formattedTotal : selectedPrice.calculated_price}
         </span>
       </span>
+      {quantity > 1 && (
+        <span className="text-sm text-ui-fg-subtle">
+          {selectedPrice.calculated_price} × {quantity}
+        </span>
+      )}
       {selectedPrice.price_type === "sale" && (
         <>
           <p>

@@ -9,18 +9,18 @@ import LocalizedClientLink from "@modules/common/components/localized-client-lin
 import CartButton from "@modules/layout/components/cart-button"
 import SideMenu from "@modules/layout/components/side-menu"
 import LocaleSwitcher from "@modules/layout/components/locale-switcher"
+import MegaMenu from "@modules/layout/components/mega-menu"
+import SearchBar from "@modules/layout/components/search-bar"
 import { listCategories } from "@lib/data/categories"
+import { MEGA_MENU_CONFIG } from "@lib/config/mega-menu"
 
 // Plant icons for categories
-const CategoryIcon = ({ category }: { category: string }) => {
-  const icons: Record<string, string> = {
-    "plantes-interieur": "🌿",
-    "plantes-exterieur": "🌳",
-    "pots": "🪴",
-    "accessoires": "✂️",
-    "default": "🌱"
-  }
-  return <span className="mr-1.5">{icons[category] || icons.default}</span>
+const icons: Record<string, string> = {
+  "indoor-plants": "🌿",
+  "outdoor-plants": "🌳",
+  "pots": "🪴",
+  "accessories": "✂️",
+  "default": "🌱"
 }
 
 export default async function Nav() {
@@ -43,7 +43,7 @@ export default async function Nav() {
         <span className="small:hidden">🌱 {t("freeShippingShort") || "Livraison gratuite dès 100 TND"}</span>
       </div>
 
-      <header className="relative mx-auto bg-brand-cream border-b border-brand-beigeDark/30 shadow-sm">
+      <header className="relative mx-auto bg-brand-cream border-b border-brand-beigeDark/30 shadow-sm overflow-visible">
         {/* Main navigation */}
         <nav className="content-container flex items-center justify-between w-full h-16 gap-4">
           {/* Left: Menu button */}
@@ -69,24 +69,7 @@ export default async function Nav() {
 
           {/* Search bar - desktop only */}
           <div className="flex-1 hidden medium:flex items-center justify-center px-8">
-            <div className="w-full max-w-md">
-              <div className="relative">
-                <input
-                  type="search"
-                  placeholder={t("searchPlaceholder")}
-                  className="w-full rounded-full border border-brand-beigeDark/50 bg-white px-4 py-2.5 pl-10 text-sm text-brand-oliveDark placeholder:text-brand-oliveDark/50 focus:border-brand-olive focus:ring-2 focus:ring-brand-olive/20 focus:outline-none transition-all"
-                  aria-label={t("searchPlaceholder")}
-                />
-                <svg 
-                  className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-oliveDark/50" 
-                  fill="none" 
-                  stroke="currentColor" 
-                  viewBox="0 0 24 24"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-              </div>
-            </div>
+            <SearchBar />
           </div>
 
           {/* Right: Actions */}
@@ -131,47 +114,59 @@ export default async function Nav() {
 
         {/* Category navigation */}
         <div className="border-t border-brand-beigeDark/20 bg-white/50">
-          <div className="content-container flex items-center gap-1 small:gap-4 h-12 overflow-x-auto no-scrollbar">
-            {rootCategories.map((category) => (
-              <div key={category.id} className="relative group/cat shrink-0">
-                <LocalizedClientLink
-                  href={`/category/${category.handle}`}
-                  className="flex items-center px-3 py-2 text-sm font-medium text-brand-oliveDark hover:text-brand-olive hover:bg-brand-beige/60 rounded-lg transition-all"
-                >
-                  <CategoryIcon category={category.handle || ""} />
-                  <span>{category.name}</span>
-                  {category.category_children?.length ? (
-                    <svg className="w-4 h-4 ml-1 opacity-50 group-hover/cat:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  ) : null}
-                </LocalizedClientLink>
+          <div className="content-container flex items-center gap-1 small:gap-4 h-12 overflow-visible">
+            {rootCategories.map((category) => {
+              const hasMegaMenu = category.handle && MEGA_MENU_CONFIG[category.handle]
+              const icon = icons[category.handle || ""] || icons.default
+              
+              return hasMegaMenu ? (
+                <MegaMenu
+                  key={category.id}
+                  categoryHandle={category.handle || ""}
+                  categoryName={category.name || ""}
+                  categoryIcon={icon}
+                />
+              ) : (
+                <div key={category.id} className="relative group/cat shrink-0">
+                  <LocalizedClientLink
+                    href={`/category/${category.handle}`}
+                    className="flex items-center px-3 py-2 text-sm font-medium text-brand-oliveDark hover:text-brand-olive hover:bg-brand-beige/60 rounded-lg transition-all"
+                  >
+                    <span className="mr-1.5">{icon}</span>
+                    <span>{category.name}</span>
+                    {category.category_children?.length ? (
+                      <svg className="w-4 h-4 ml-1 opacity-50 group-hover/cat:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    ) : null}
+                  </LocalizedClientLink>
 
-                {/* Dropdown for subcategories */}
-                {category.category_children?.length ? (
-                  <div className="absolute left-0 top-full pt-2 hidden group-hover/cat:block z-50">
-                    <div className="w-64 rounded-xl bg-white border border-brand-beigeDark/30 shadow-xl p-3 animate-in fade-in slide-in-from-top-2 duration-200">
-                      <div className="text-xs font-semibold text-brand-olive uppercase tracking-wider px-2 py-1 mb-2">
-                        {category.name}
+                  {/* Dropdown for subcategories */}
+                  {category.category_children?.length ? (
+                    <div className="absolute left-0 top-full pt-2 hidden group-hover/cat:block z-50">
+                      <div className="w-64 rounded-xl bg-white border border-brand-beigeDark/30 shadow-xl p-3 animate-in fade-in slide-in-from-top-2 duration-200">
+                        <div className="text-xs font-semibold text-brand-olive uppercase tracking-wider px-2 py-1 mb-2">
+                          {category.name}
+                        </div>
+                        <ul className="space-y-1">
+                          {category.category_children.map((child) => (
+                            <li key={child.id}>
+                              <LocalizedClientLink
+                                href={`/category/${child.handle}`}
+                                className="flex items-center px-3 py-2 text-sm text-brand-oliveDark hover:text-brand-olive hover:bg-brand-beige/60 rounded-lg transition-all"
+                              >
+                                <span className="mr-2 text-brand-olive/60">•</span>
+                                {child.name}
+                              </LocalizedClientLink>
+                            </li>
+                          ))}
+                        </ul>
                       </div>
-                      <ul className="space-y-1">
-                        {category.category_children.map((child) => (
-                          <li key={child.id}>
-                            <LocalizedClientLink
-                              href={`/category/${child.handle}`}
-                              className="flex items-center px-3 py-2 text-sm text-brand-oliveDark hover:text-brand-olive hover:bg-brand-beige/60 rounded-lg transition-all"
-                            >
-                              <span className="mr-2 text-brand-olive/60">•</span>
-                              {child.name}
-                            </LocalizedClientLink>
-                          </li>
-                        ))}
-                      </ul>
                     </div>
-                  </div>
-                ) : null}
-              </div>
-            ))}
+                  ) : null}
+                </div>
+              )
+            })}
 
             {/* Right side links */}
             <div className="hidden medium:flex items-center gap-2 ml-auto">
@@ -182,13 +177,13 @@ export default async function Nav() {
                 <span className="mr-1.5">✨</span>
                 {t("newArrivals") || "Nouveautés"}
               </LocalizedClientLink>
-              <button 
+              <LocalizedClientLink 
+                href="/store?sale=true"
                 className="flex items-center px-3 py-2 text-sm font-medium text-brand-coral hover:text-brand-coral/80 hover:bg-brand-coral/10 rounded-lg transition-all"
-                type="button"
               >
-                <span className="mr-1.5">💡</span>
-                {t("inspiration")}
-              </button>
+                <span className="mr-1.5">🏷️</span>
+                {t("discounts")}
+              </LocalizedClientLink>
             </div>
           </div>
         </div>

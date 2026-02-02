@@ -33,29 +33,36 @@ const FILTER_CONFIG: Record<string, {
   
   // Indoor plant filters
   size: { label: "Size", labelFr: "Taille", type: "checkbox", order: 2, environments: ["indoor"] },
+  plant_type: { label: "Plant type", labelFr: "Type de plante", type: "checkbox", order: 2.5, environments: ["indoor", "outdoor"] },
   water_needs: { label: "Water needs", labelFr: "Besoin en eau", type: "checkbox", order: 3, environments: ["indoor", "outdoor"] },
-  light: { label: "Light", labelFr: "Lumière", type: "checkbox", order: 4, environments: ["indoor", "outdoor"] },
+  light: { label: "Light", labelFr: "Lumière", type: "checkbox", order: 4, environments: ["indoor"] },
   difficulty: { label: "Difficulty", labelFr: "Niveau d'entretien", type: "checkbox", order: 5, environments: ["indoor"] },
   color: { label: "Color", labelFr: "Couleur", type: "color", order: 6, environments: ["indoor"] },
   family: { label: "Plant family", labelFr: "Famille", type: "checkbox", order: 7, environments: ["indoor"] },
   features: { label: "Features", labelFr: "Caractéristiques", type: "checkbox", order: 8, environments: ["indoor"] },
-  placement: { label: "Room", labelFr: "Pièce", type: "checkbox", order: 9, environments: ["indoor", "outdoor"] },
+  room_suitability: { label: "Room/Space", labelFr: "Pièce/Espace", type: "checkbox", order: 9, environments: ["indoor", "outdoor"] },
   shape: { label: "Shape", labelFr: "Forme", type: "checkbox", order: 10, environments: ["indoor"] },
   style: { label: "Style", labelFr: "Style", type: "checkbox", order: 11, environments: ["indoor"] },
   hanging: { label: "Standing or hanging", labelFr: "Port de la plante", type: "checkbox", order: 12, environments: ["indoor"] },
   rarity: { label: "Rarity", labelFr: "Rareté", type: "checkbox", order: 13, environments: ["indoor"] },
-  height_cm: { label: "Height", labelFr: "Hauteur (cm)", type: "range", order: 14, environments: ["indoor", "outdoor", "pot"] },
-  diameter_cm: { label: "Diameter", labelFr: "Diamètre (cm)", type: "range", order: 15, environments: ["indoor", "outdoor", "pot"] },
+  pet_friendly: { label: "Pet friendly", labelFr: "Adapté aux animaux", type: "checkbox", order: 14, environments: ["indoor"] },
+  air_purifying: { label: "Air purifying", labelFr: "Purifie l'air", type: "checkbox", order: 15, environments: ["indoor"] },
+  height_cm: { label: "Height", labelFr: "Hauteur (cm)", type: "range", order: 16, environments: ["indoor", "outdoor", "pot"] },
+  diameter_cm: { label: "Diameter", labelFr: "Diamètre (cm)", type: "range", order: 17, environments: ["indoor", "outdoor", "pot"] },
   
   // Outdoor plant filters
   sun_exposure: { label: "Sun exposure", labelFr: "Exposition au soleil", type: "checkbox", order: 4, environments: ["outdoor"] },
   climate: { label: "Climate", labelFr: "Climat", type: "checkbox", order: 9, environments: ["outdoor"] },
   frost_resistant: { label: "Frost resistant", labelFr: "Résistant au gel", type: "checkbox", order: 10, environments: ["outdoor"] },
-  season: { label: "Season", labelFr: "Saison", type: "checkbox", order: 11, environments: ["outdoor"] },
+  heat_resistant: { label: "Heat resistant", labelFr: "Résistant à la chaleur", type: "checkbox", order: 10.5, environments: ["outdoor"] },
+  flowering_season: { label: "Flowering season", labelFr: "Saison de floraison", type: "checkbox", order: 11, environments: ["outdoor"] },
+  season: { label: "Season", labelFr: "Saison", type: "checkbox", order: 11.5, environments: ["outdoor"] },
   
   // Pot filters
   material: { label: "Material", labelFr: "Matériau", type: "checkbox", order: 2, environments: ["pot"] },
   drainage: { label: "Drainage", labelFr: "Drainage", type: "checkbox", order: 6, environments: ["pot"] },
+  sizes_available: { label: "Size", labelFr: "Taille", type: "checkbox", order: 3, environments: ["pot"] },
+  usage: { label: "Usage", labelFr: "Usage", type: "checkbox", order: 7, environments: ["pot"] },
   
   // Collections and tags
   collection: { label: "Collection", labelFr: "Collection", type: "checkbox", order: 90, environments: ["all"] },
@@ -160,9 +167,85 @@ const VALUE_LABELS: Record<string, Record<string, string>> = {
     true: "Résistant au gel",
     false: "Sensible au gel",
   },
+  heat_resistant: {
+    true: "Résistant à la chaleur",
+    false: "Sensible à la chaleur",
+  },
+  flowering_season: {
+    spring: "Printemps",
+    summer: "Été",
+    autumn: "Automne",
+    winter: "Hiver",
+    all_year: "Toute l'année",
+  },
   drainage: {
     true: "Avec drainage",
     false: "Sans drainage",
+  },
+  pet_friendly: {
+    true: "Adapté aux animaux",
+    false: "Non adapté aux animaux",
+  },
+  air_purifying: {
+    true: "Purifie l'air",
+    false: "Ne purifie pas l'air",
+  },
+  plant_type: {
+    // Indoor plant types
+    alocasia: "Alocasia",
+    philodendron: "Philodendron",
+    monstera: "Monstera",
+    hoya: "Hoya",
+    anthurium: "Anthurium",
+    ficus: "Ficus",
+    pothos: "Pothos",
+    calathea: "Calathea",
+    dracaena: "Dracaena",
+    palm: "Palmier",
+    succulent: "Succulente",
+    cactus: "Cactus",
+    fern: "Fougère",
+    begonia: "Bégonia",
+    peperomia: "Pépéromia",
+    syngonium: "Syngonium",
+    sansevieria: "Sansevière",
+    spathiphyllum: "Spathiphyllum",
+    zamioculcas: "Zamioculcas",
+    schefflera: "Schefflera",
+    croton: "Croton",
+    dieffenbachia: "Dieffenbachia",
+    aglaonema: "Aglaonema",
+    maranta: "Maranta",
+    tradescantia: "Tradescantia",
+    chlorophytum: "Chlorophytum",
+    // Outdoor plant types
+    fruit_tree: "Arbre fruitier",
+    flowering_shrub: "Arbuste fleuri",
+    climber: "Plante grimpante",
+    herb: "Plante aromatique",
+    perennial: "Plante vivace",
+    shrub: "Arbuste",
+  },
+  room_suitability: {
+    salon: "Salon",
+    bureau: "Bureau",
+    chambre: "Chambre",
+    salle_de_bains: "Salle de bain",
+    cuisine: "Cuisine",
+    couloir: "Couloir",
+    terrasse: "Terrasse",
+    balcon: "Balcon",
+    jardin: "Jardin",
+  },
+  usage: {
+    indoor: "Intérieur",
+    outdoor: "Extérieur",
+  },
+  sizes_available: {
+    S: "Petite (S)",
+    M: "Moyenne (M)",
+    L: "Grande (L)",
+    XL: "Très grande (XL)",
   },
 }
 
@@ -236,7 +319,10 @@ export const buildMetadataFilters = (
     if (metadata.environment === "indoor") {
       addOption(optionsMap, "size", metadata.size)
       addOption(optionsMap, "family", metadata.family)
-      metadata.placement?.forEach((value) => addOption(optionsMap, "placement", value))
+      addOption(optionsMap, "plant_type", (metadata as any).plant_type)
+      // Support both room_suitability and placement for backwards compatibility
+      const roomValues = (metadata as any).room_suitability || metadata.placement
+      roomValues?.forEach((value: string) => addOption(optionsMap, "room_suitability", value))
       addOption(optionsMap, "light", metadata.light)
       addOption(optionsMap, "difficulty", metadata.difficulty)
       addOption(optionsMap, "rarity", metadata.rarity)
@@ -259,10 +345,17 @@ export const buildMetadataFilters = (
     // Outdoor plants
     if (metadata.environment === "outdoor") {
       addOption(optionsMap, "sun_exposure", metadata.sun_exposure)
-      addOption(optionsMap, "water_needs", metadata.watering)
+      // Support both water_needs and watering for backwards compatibility
+      addOption(optionsMap, "water_needs", (metadata as any).water_needs || metadata.watering)
+      addOption(optionsMap, "plant_type", (metadata as any).plant_type)
+      // Support both room_suitability for outdoor spaces
+      const spaceValues = (metadata as any).room_suitability
+      spaceValues?.forEach((value: string) => addOption(optionsMap, "room_suitability", value))
       metadata.climate?.forEach((value) => addOption(optionsMap, "climate", value))
       metadata.season?.forEach((value) => addOption(optionsMap, "season", value))
       addOption(optionsMap, "frost_resistant", metadata.frost_resistant)
+      addOption(optionsMap, "heat_resistant", (metadata as any).heat_resistant)
+      addOption(optionsMap, "flowering_season", (metadata as any).flowering_season)
       
       addRangeValues(rangeMap, "height_cm", metadata.height_cm)
       addRangeValues(rangeMap, "diameter_cm", metadata.diameter_cm)

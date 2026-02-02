@@ -7,6 +7,7 @@ import ProductTabs from "@modules/products/components/product-tabs"
 import RelatedProducts from "@modules/products/components/related-products"
 import CompatiblePots from "@modules/products/components/compatible-pots"
 import CompatiblePlants from "@modules/products/components/compatible-plants"
+import PlantCharacteristics from "@modules/products/components/plant-characteristics"
 import ProductInfo from "@modules/products/templates/product-info"
 import SkeletonRelatedProducts from "@modules/skeletons/templates/skeleton-related-products"
 import SkeletonCompatiblePots from "@modules/skeletons/components/skeleton-compatible-pots"
@@ -60,20 +61,17 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
               />
             }
           >
-            <ProductActionsWrapper id={product.id} region={region} />
+            <ProductActionsWrapper id={product.id} region={region} countryCode={countryCode} />
           </Suspense>
-          {showCompatiblePots && (
-            <Suspense fallback={<SkeletonCompatiblePots mode="selector" />}>
-              <CompatiblePots
-                product={product}
-                region={region}
-                countryCode={countryCode}
-                mode="selector"
-              />
-            </Suspense>
-          )}
         </div>
       </div>
+
+      {/* Plant Characteristics bar - PLNTS.com style */}
+      {showCompatiblePots && (
+        <div className="content-container my-8">
+          <PlantCharacteristics product={product} />
+        </div>
+      )}
 
       {/* Compatibility sections */}
       {(showCompatiblePots || showCompatiblePlants) && (

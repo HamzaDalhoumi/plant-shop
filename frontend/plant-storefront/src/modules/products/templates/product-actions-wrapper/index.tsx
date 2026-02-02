@@ -1,5 +1,7 @@
 import { listProducts } from "@lib/data/products"
 import { HttpTypes } from "@medusajs/types"
+import { getCompatiblePotsForPlant } from "@lib/data/compatibility"
+import { isPlantProduct } from "@lib/util/compatibility"
 import ProductActions from "@modules/products/components/product-actions"
 
 /**
@@ -8,9 +10,11 @@ import ProductActions from "@modules/products/components/product-actions"
 export default async function ProductActionsWrapper({
   id,
   region,
+  countryCode,
 }: {
   id: string
   region: HttpTypes.StoreRegion
+  countryCode: string
 }) {
   const product = await listProducts({
     queryParams: { id: [id] },
@@ -21,5 +25,20 @@ export default async function ProductActionsWrapper({
     return null
   }
 
-  return <ProductActions product={product} region={region} />
+  // Fetch compatible pots if this is a plant
+  let compatiblePots = null
+  if (isPlantProduct(product)) {
+    compatiblePots = await getCompatiblePotsForPlant({
+      plant: product,
+      countryCode,
+    })
+  }
+
+  return (
+    <ProductActions 
+      product={product} 
+      region={region} 
+      compatiblePots={compatiblePots}
+    />
+  )
 }

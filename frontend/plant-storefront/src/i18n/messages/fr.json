@@ -34,7 +34,8 @@
     "inStock": "En stock",
     "items": "articles",
     "item": "article",
-    "allRightsReserved": "Tous droits réservés"
+    "allRightsReserved": "Tous droits réservés",
+    "sortBy": "Trier par"
   },
   "nav": {
     "storeName": "Plant Shop",
@@ -46,7 +47,7 @@
     "outdoorPlants": "Plantes d'extérieur",
     "pots": "Pots & Cache-pots",
     "accessories": "Accessoires",
-    "inspiration": "Inspiration",
+    "discounts": "Promotions",
     "freeShipping": "🚚 Livraison gratuite dès 100 TND d'achat",
     "freeShippingShort": "Livraison gratuite dès 100 TND",
     "newArrivals": "Nouveautés",
@@ -113,7 +114,11 @@
     "lightNeeds": "Besoin en lumière",
     "waterNeeds": "Besoin en eau",
     "petFriendly": "Adapté aux animaux",
-    "airPurifying": "Purificateur d'air"
+    "airPurifying": "Purificateur d'air",
+    "findMatchingPot": "Trouver un pot assorti",
+    "viewAllPots": "Voir tous les pots",
+    "plantSizeGuide": "Guide des tailles",
+    "quantity": "Quantité"
   },
   "cart": {
     "title": "Votre panier",
@@ -343,8 +348,18 @@
     "byFamily": "Par famille de plantes",
     "byLocation": "Par emplacement",
     "byCharacteristic": "Par caractéristique",
-    "indoor": "Plantes d'intérieur",
-    "outdoor": "Plantes d'extérieur",
+    "indoor": {
+      "title": "Plantes d'intérieur"
+    },
+    "outdoor": {
+      "title": "Plantes d'extérieur"
+    },
+    "pots": {
+      "title": "Pots & Cache-pots"
+    },
+    "all": {
+      "title": "Toutes les plantes"
+    },
     "allPlants": "Toutes les plantes",
     "size": {
       "tubersSeeds": "Tubercules et graines 🌰",
@@ -391,6 +406,84 @@
       "aromatic": "Plantes aromatiques 🌿"
     }
   },
+  "megaMenu": {
+    "shopNewIndoorPlants": "Découvrir les nouvelles plantes d'intérieur",
+    "shopAllIndoorPlants": "Voir toutes les plantes d'intérieur",
+    "shopAllOutdoorPlants": "Voir toutes les plantes d'extérieur",
+    "shopAllPots": "Voir tous les pots",
+    "groups": {
+      "bySize": "Par taille",
+      "byFamily": "Par famille de plantes",
+      "byRoom": "Par emplacement",
+      "byFeature": "Par caractéristique",
+      "bySunExposure": "☀️ Par exposition",
+      "byClimate": "Par climat",
+      "byPlacement": "Par emplacement",
+      "byMaterial": "Par matériau",
+      "byPlantType": "🌳 Par type",
+      "bySpace": "📍 Par espace",
+      "ourSelections": "✨ Nos sélections"
+    },
+    "items": {
+      "bulbs": "Tubercules et graines",
+      "small": "Petites plantes (S)",
+      "medium": "Moyennes plantes (M, L)",
+      "large": "Grandes plantes (XL, XXL)",
+      "extraLarge": "Très grandes plantes",
+      "alocasia": "Alocasia",
+      "philodendron": "Philodendron",
+      "monstera": "Monstera",
+      "hoya": "Hoya",
+      "anthurium": "Anthurium",
+      "ficus": "Ficus",
+      "pothos": "Pothos",
+      "calathea": "Calathea",
+      "dracaena": "Dracaena",
+      "palm": "Palmiers",
+      "succulent": "Succulentes",
+      "cactus": "Cactus",
+      "bathroom": "Plantes pour la salle de bains",
+      "bedroom": "Plantes pour la chambre",
+      "livingRoom": "Plantes pour le salon",
+      "office": "Plantes pour le bureau",
+      "kitchen": "Plantes pour la cuisine",
+      "easy": "Plantes d'intérieur faciles",
+      "petFriendly": "Plantes adaptées aux animaux",
+      "airPurifying": "Plantes purificatrices d'air",
+      "lowLight": "Plantes d'intérieur d'ombre",
+      "hanging": "Plantes suspendues",
+      "rare": "Plantes d'intérieur rares",
+      "fullSun": "Plein soleil",
+      "partialShade": "Mi-ombre",
+      "shade": "Ombre",
+      "mediterranean": "Méditerranéen",
+      "tropical": "Tropical",
+      "temperate": "Tempéré",
+      "arid": "Aride",
+      "frostResistant": "Résistant au gel",
+      "droughtTolerant": "Résistant à la sécheresse",
+      "balcony": "Balcon",
+      "terrace": "Terrasse",
+      "garden": "Jardin",
+      "ceramic": "Céramique",
+      "terracotta": "Terre cuite",
+      "plastic": "Plastique",
+      "concrete": "Béton",
+      "metal": "Métal",
+      "withDrainage": "Avec drainage",
+      "indoor": "Usage intérieur",
+      "outdoor": "Usage extérieur",
+      "fruitTrees": "Arbres fruitiers",
+      "palms": "Palmiers",
+      "floweringShrubs": "Arbustes fleuris",
+      "climbers": "Plantes grimpantes",
+      "outdoorSucculents": "Cactus & Succulentes",
+      "heatResistant": "Résistant à la chaleur",
+      "lowWater": "Peu d'arrosage",
+      "yearRoundFlowers": "Fleuries toute l'année",
+      "fruitTreesSelection": "Arbres fruitiers"
+    }
+  },
   "filters": {
     "filterTitle": "Filtrer les plantes",
     "priceFrom": "0 TND",
@@ -411,6 +504,9 @@
     "showResults": "Afficher {count} résultats",
     "clearAll": "Effacer tout",
     "applyFilters": "Appliquer les filtres",
+    "showLess": "Afficher moins",
+    "showAll": "Afficher tout ({count})",
+    "helpText": "Utilisez les filtres ci-dessus pour trouver la plante parfaite pour votre espace. Combinez plusieurs filtres pour affiner votre recherche.",
     "price": "Prix",
     "size": "Taille",
     "careLevel": "Niveau d'entretien",
@@ -544,5 +640,29 @@
     "shopTitle": "Boutique - Plant Shop",
     "categoryTitle": "{category} - Plant Shop",
     "productTitle": "{product} - Plant Shop"
+  },
+  "plantInfo": {
+    "diameter": "Diamètre",
+    "height": "Hauteur",
+    "light": "Aime",
+    "careLevel": "Niveau de soins",
+    "advantages": "Avantages",
+    "lightValues": {
+      "directSun": "Soleil direct",
+      "indirectLight": "Lumière indirecte",
+      "partialShade": "Mi-ombre",
+      "lowLight": "Faible luminosité",
+      "fullSun": "Plein soleil",
+      "shade": "Ombre"
+    },
+    "careValues": {
+      "easy": "Facile",
+      "medium": "Intermédiaire",
+      "expert": "Expert"
+    },
+    "advantagesValues": {
+      "airPurifying": "Purificateur d'air",
+      "petFriendly": "Sans danger animaux"
+    }
   }
 }

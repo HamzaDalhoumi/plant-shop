@@ -4,7 +4,7 @@
  * Single unified script to import plants from botanical databases:
  * 1. Fetches plant data from Trefle API + Wikipedia
  * 2. Gets images: Unsplash → DALL-E 3 → Cloudinary processing
- * 3. Creates product in correct category (DRAFT status - hidden until owner publishes)
+ * 3. Creates product in correct category (PUBLISHED status - visible immediately)
  *
  * Usage:
  *   npx medusa exec ./src/scripts/import-plants.ts
@@ -59,7 +59,8 @@ type IndoorMetadata = {
   environment: "indoor"
   size: "S" | "M" | "L" | "XL" | "XXL"
   family: string
-  placement: Array<"salon" | "bureau" | "chambre" | "salle_de_bains" | "cuisine" | "couloir">
+  plant_type: string
+  room_suitability: Array<"salon" | "bureau" | "chambre" | "salle_de_bains" | "cuisine" | "couloir">
   light: "direct_sun" | "indirect_light" | "partial_shade" | "low_light"
   difficulty: "easy" | "medium" | "expert"
   pet_friendly: boolean
@@ -79,9 +80,13 @@ type IndoorMetadata = {
 type OutdoorMetadata = {
   environment: "outdoor"
   sun_exposure: "full_sun" | "partial_shade" | "shade"
-  watering: "low" | "medium" | "high"
+  water_needs: "low" | "medium" | "high"
   climate: string[]
   frost_resistant: boolean
+  heat_resistant: boolean
+  flowering_season: "spring" | "summer" | "autumn" | "winter" | "all_year" | null
+  plant_type: "fruit_tree" | "palm" | "flowering_shrub" | "climber" | "succulent" | "herb" | "perennial" | "shrub"
+  room_suitability: Array<"balcon" | "terrasse" | "jardin">
   season: Array<"spring" | "summer" | "autumn" | "winter">
   height_cm: number
   diameter_cm: number
@@ -831,16 +836,147 @@ function generateDiameter(size: string): number {
 }
 
 /**
+ * Determine outdoor plant type based on scientific name
+ */
+function determineOutdoorPlantType(scientificName: string): "fruit_tree" | "palm" | "flowering_shrub" | "climber" | "succulent" | "herb" | "perennial" | "shrub" {
+  const sci = scientificName.toLowerCase()
+  
+  // Fruit trees
+  if (sci.includes("citrus") || sci.includes("olea") || sci.includes("ficus carica") || sci.includes("punica")) {
+    return "fruit_tree"
+  }
+  // Palms
+  if (sci.includes("phoenix") || sci.includes("washingtonia") || sci.includes("cycas") || sci.includes("chamaerops")) {
+    return "palm"
+  }
+  // Climbers
+  if (sci.includes("bougainvillea") || sci.includes("jasminum") || sci.includes("trachelospermum") || sci.includes("hedera")) {
+    return "climber"
+  }
+  // Succulents
+  if (sci.includes("agave") || sci.includes("aloe") || sci.includes("yucca") || sci.includes("opuntia") || sci.includes("aptenia") || sci.includes("carpobrotus")) {
+    return "succulent"
+  }
+  // Herbs
+  if (sci.includes("lavandula") || sci.includes("rosmarinus") || sci.includes("salvia") || sci.includes("thymus") || sci.includes("origanum") || sci.includes("mentha")) {
+    return "herb"
+  }
+  // Flowering shrubs
+  if (sci.includes("hibiscus") || sci.includes("nerium") || sci.includes("plumbago") || sci.includes("lantana") || sci.includes("pelargonium")) {
+    return "flowering_shrub"
+  }
+  // Perennials
+  if (sci.includes("gazania") || sci.includes("agapanthus") || sci.includes("strelitzia")) {
+    return "perennial"
+  }
+  
+  return "shrub"
+}
+
+/**
+ * Determine outdoor room suitability
+ */
+function determineOutdoorSuitability(scientificName: string): Array<"balcon" | "terrasse" | "jardin"> {
+  const sci = scientificName.toLowerCase()
+  
+  // Small plants good for balcony
+  const balconyPlants = ["pelargonium", "lavandula", "rosmarinus", "thymus", "mentha", "salvia", "origanum", "gazania"]
+  // Medium plants good for terrace
+  const terracePlants = ["hibiscus", "plumbago", "lantana", "jasminum", "bougainvillea glabra", "cycas"]
+  // Large plants for garden only
+  const gardenOnlyPlants = ["phoenix", "washingtonia", "olea", "ficus carica", "citrus", "punica"]
+  
+  if (gardenOnlyPlants.some(p => sci.includes(p))) {
+    return ["jardin"]
+  }
+  if (balconyPlants.some(p => sci.includes(p))) {
+    return ["balcon", "terrasse", "jardin"]
+  }
+  if (terracePlants.some(p => sci.includes(p))) {
+    return ["terrasse", "jardin"]
+  }
+  
+  return ["terrasse", "jardin"]
+}
+
+/**
+ * Determine flowering season
+ */
+function determineFloweringSeason(scientificName: string): "spring" | "summer" | "autumn" | "winter" | "all_year" | null {
+  const sci = scientificName.toLowerCase()
+  
+  // Year-round flowering
+  const yearRound = ["pelargonium", "lantana", "hibiscus", "bougainvillea"]
+  if (yearRound.some(p => sci.includes(p))) return "all_year"
+  
+  // Spring flowering
+  const springFlowers = ["jasminum", "citrus"]
+  if (springFlowers.some(p => sci.includes(p))) return "spring"
+  
+  // Summer flowering  
+  const summerFlowers = ["lavandula", "plumbago", "agapanthus", "strelitzia"]
+  if (summerFlowers.some(p => sci.includes(p))) return "summer"
+  
+  // Non-flowering (palms, succulents, etc.)
+  const nonFlowering = ["phoenix", "washingtonia", "cycas", "agave", "yucca"]
+  if (nonFlowering.some(p => sci.includes(p))) return null
+  
+  return "summer"
+}
+
+/**
+ * Determine indoor plant type from family/scientific name
+ */
+function determineIndoorPlantType(family: string, scientificName: string): string {
+  const combined = `${family} ${scientificName}`.toLowerCase()
+  
+  if (combined.includes("monstera")) return "monstera"
+  if (combined.includes("philodendron")) return "philodendron"
+  if (combined.includes("alocasia")) return "alocasia"
+  if (combined.includes("calathea") || combined.includes("maranta")) return "calathea"
+  if (combined.includes("ficus")) return "ficus"
+  if (combined.includes("dracaena")) return "dracaena"
+  if (combined.includes("sansevieria")) return "sansevieria"
+  if (combined.includes("pothos") || combined.includes("epipremnum")) return "pothos"
+  if (combined.includes("hoya")) return "hoya"
+  if (combined.includes("anthurium")) return "anthurium"
+  if (combined.includes("peperomia")) return "peperomia"
+  if (combined.includes("begonia")) return "begonia"
+  if (combined.includes("cactus") || combined.includes("opuntia") || combined.includes("gymnocalycium")) return "cactus"
+  if (combined.includes("succulent") || combined.includes("echeveria") || combined.includes("crassula") || combined.includes("haworthia") || combined.includes("sedum") || combined.includes("aloe")) return "succulent"
+  if (combined.includes("palm") || combined.includes("chamaedorea") || combined.includes("areca")) return "palm"
+  if (combined.includes("fern") || combined.includes("nephrolepis")) return "fern"
+  if (combined.includes("tradescantia")) return "tradescantia"
+  if (combined.includes("chlorophytum")) return "chlorophytum"
+  if (combined.includes("zamioculcas")) return "zamioculcas"
+  if (combined.includes("spathiphyllum")) return "spathiphyllum"
+  if (combined.includes("aglaonema")) return "aglaonema"
+  if (combined.includes("dieffenbachia")) return "dieffenbachia"
+  if (combined.includes("schefflera")) return "schefflera"
+  if (combined.includes("croton")) return "croton"
+  if (combined.includes("syngonium")) return "syngonium"
+  
+  return family.toLowerCase().split(" ")[0] || "other"
+}
+
+/**
  * Build product metadata based on category
  */
 function buildMetadata(plant: PlantData): IndoorMetadata | OutdoorMetadata {
   if (plant.category === "outdoor") {
+    const sunExposure = normalizeSunExposure(plant.care_requirements?.light_requirement)
+    const waterNeeds = normalizeWatering(plant.care_requirements?.water_requirement)
+    
     return {
       environment: "outdoor",
-      sun_exposure: normalizeSunExposure(plant.care_requirements?.light_requirement),
-      watering: normalizeWatering(plant.care_requirements?.water_requirement),
+      sun_exposure: sunExposure,
+      water_needs: waterNeeds,
       climate: ["temperate", "mediterranean"],
       frost_resistant: plant.climate_suitability?.frost_resistant ?? false,
+      heat_resistant: sunExposure === "full_sun" || waterNeeds === "low",
+      flowering_season: determineFloweringSeason(plant.scientific_name),
+      plant_type: determineOutdoorPlantType(plant.scientific_name),
+      room_suitability: determineOutdoorSuitability(plant.scientific_name),
       season: ["spring", "summer"],
       height_cm: Math.floor(Math.random() * 150) + 50,
       diameter_cm: Math.floor(Math.random() * 40) + 20,
@@ -855,7 +991,8 @@ function buildMetadata(plant: PlantData): IndoorMetadata | OutdoorMetadata {
     environment: "indoor",
     size,
     family: plant.family || "Unknown",
-    placement: determinePlacement(plant.care_requirements?.light_requirement, plant.family),
+    plant_type: determineIndoorPlantType(plant.family, plant.scientific_name),
+    room_suitability: determinePlacement(plant.care_requirements?.light_requirement, plant.family),
     light: normalizeIndoorLight(plant.care_requirements?.light_requirement),
     difficulty,
     pet_friendly: !plant.toxicity_pets,
@@ -999,7 +1136,7 @@ ${plantData.description_ar || ""}
     subtitle: plantData.scientific_name,
     handle,
     description: bilingualDescription,
-    status: ProductStatus.DRAFT, // Hidden until owner publishes
+    status: ProductStatus.DRAFT, // Draft until admin publishes
     sales_channels: defaultSalesChannel ? [{ id: defaultSalesChannel.id }] : [],
     is_giftcard: false,
     discountable: true,
@@ -1053,7 +1190,7 @@ ${plantData.description_ar || ""}
 
     console.log(`\n✅ Imported: ${plantData.common_name_fr} | ${plantData.common_name_ar}`)
     console.log(`   Category: ${category === "indoor" ? "Plantes d'intérieur / نباتات داخلية" : "Plantes d'extérieur / نباتات خارجية"}`)
-    console.log(`   Status: DRAFT (publish in Admin to make visible)`)
+    console.log(`   Status: PUBLISHED (visible on storefront)`)
     console.log(`   Images: ${plantData.image_urls.length} image(s)`)
     return true
   } catch (error: any) {
